@@ -130,3 +130,59 @@
     * 동일한 정보에 대한 여러 버전을 관리하는 것. 팀 단위로 개발 중인 소스 코드나, 청사진 같은 설계도 등의 디지털 문서를 관리하는데 사용됨.
     * 소프트웨어 엔지니어링에서는 일반적인 소프트웨어 소스 코드만을 관리하는 내역을 주로 버전 관리라고 정의. 
     일반적으로 산업 공학이나 이전 생산 기반 제조 공학 등에서 소프트웨어 쪽으로 넘어오는 학문적 관심에 의해 이전 생산 공학에서 사용하던 개념을 가져오게 되었고, 그에따라 버전 관리(Software Version Management)와 형상 관리(Software Configuration Management)의 개념들이 따라왔음.
+
+***    
+더러운 코드 고치기 미션
+---
+* 검색가능한 이름을 사용 - 이름이 정해져 있지 않은 상수.
+    * 우리는 작성할 코드보다 읽을 코드가 더 많음. 그렇기 때문에 코드를 읽기 쉽고 검색가능하게 작성해야 함. 그렇지 않으면 코드를 이해하려고 하는 사람들에게 큰 어려움을 줌. 
+    * buddy.js 그리고 ESLint 와 같은 도구들이 이름이 정해져있지 않은 상수들을 발견하고 고칠 수 있게 도와줌. 
+    * 참고 : https://github.com/qkraudghgh/clean-code-javascript-ko
+
+    안좋은 예 : 
+    ```
+    // What the heck is 86400000 for?
+    setTimeout(blastOff, 86400000);
+    ```
+    좋은 예 : 
+    ```
+    const MILLISECONDS_IN_A_DAY
+    setTimeout(blastOff, MILLISECONDS_IN_A_DAY);
+    ```
+
+* 의미있고 발음하기 쉬운 변수 이름을 사용
+    * 안좋은 예 :
+    ```
+    const yyyymmdstr = moment().format("YYYY/MM/DD");
+    ```
+    * 좋은 예 :
+    ```
+    const currentDate = moment().format('YYYY/MM/DD');
+    ```
+    moment()를 호출하면 현재 날짜와 시각을 얻을 수 있음. 
+    format()은 이를 지졍된 형식으로 변환해 줌. 
+* 문맥상 필요없는 것들을 불필요하게 반복하지 말 것. 
+    * 안좋은 예 :
+    ```
+    const Car = {
+        carMake: "Honda",
+        carModel: "Accord",
+        carColor: "Blue"
+    };
+    
+    function paintCar(car, color) {
+        car.carColor = color;
+    }
+    ```
+    * 좋은 예 : 
+    ```
+    const Car = {
+        Make: "Honda",
+        Model: "Accord",
+        Color: "Blue"
+    };
+    
+    function paintCar(car, color) {
+        car.Color = color;
+    }
+    ```
