@@ -1,0 +1,81 @@
+
+- main메서드는 입력부분 / 요일 계산 / 출력부분 3부분으로 나뉨
+- 각각의 부분들이 관심사(concern)
+
+```
+Publc class YoilTeller {
+    @RequestMapping("/getYoil)
+    //    public static void main(String[] args) {
+    public void main(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 1. 입력
+//        String year = args[0];
+//        String month = args[1];
+//        String day = args[2];
+        String year = request.getParameter("year");
+        String month = request.getParameter("month");
+        String day = request.getParameter("day");
+
+        int yyyy = Integer.parseInt(year);
+        int mm = Integer.parseInt(month);
+        int dd = Integer.parseInt(day);
+
+        // 2. 처리
+        Calendar cal = Calendar.getInstance();
+        cal.set(yyyy, mm - 1, dd);
+
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+        char yoil = " 일월화수목금토".charAt(dayOfWeek);
+
+        // 3. 출력
+//        System.out.println(year + "년 " + month + "월 " + day + "일은 ");
+//        System.out.println(yoil + "요일입니다.");
+        response.setContentType("text/html");    // 응답의 형식을 html로 지정
+        response.setCharacterEncoding("utf-8");  // 응답의 인코딩을 utf-8로 지정
+        PrintWriter out = response.getWriter();  // 브라우저로의 출력 스트림(out)을 얻는다.
+        out.println("<html>");
+        out.println("<head>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println(year + "년 " + month + "월 " + day + "일은 ");
+        out.println(yoil + "요일입니다.");
+        out.println("</body>");
+        out.println("</html>");
+        out.close();
+    }
+}
+```
+
+```
+참고
+[oop의 설계 원칙]
+S - SRP 단일 책임의 원칙
+    - 하나의 메서드는 하나의 책임(관심사)만 진다.
+    - 분리
+        - 관심사의 분리
+        - 변하는 것, (자주) 변하지 않는 것의 분리
+        - 공통(중복)코드 
+O
+L
+I
+D
+```
+
+## 2. 공통 코드의 분리 - 입력의 분리
+
+```
+public void main(HttpServletRequest request, 
+를
+public void main(int year, int month, int day,
+로 변경가능. 
+```
+
+## 3. 출력의 분리 - 변하는 것과 변하지 않는 것의 분리
+
+```
+MVC패턴
+M - 입력, 공통의 변수를 저장한 객체
+  - Dispatcher Servlet이 변수를 view에게 전달. 
+V - 출력, 입력의 객체를 사용하여 응답. 
+C - 처리, 처리 결과를 M에 저장
+변수들을 모델 객체에 저장하면 메서드가 분리되어있어도 공통의 변수를 사용할 수 있음. 
+```
