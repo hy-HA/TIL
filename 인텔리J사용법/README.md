@@ -1,3 +1,5 @@
+# 인텔리J 단축키
+
 - auto Import
     - settings > Editor > General > Auto Import > Add unambiguous imports on the fly
 
