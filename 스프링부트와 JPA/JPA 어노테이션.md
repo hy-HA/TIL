@@ -1,10 +1,10 @@
 # JPA 어노테이션
 참고 ] https://cjw-awdsd.tistory.com/46
 
-- @Entity
+## @Entity
     - @Entity 어노테이션이 선언된 클래스를 DB 테이블과 매핑합니다.
 
-- @Table
+## @Table
     - 엔티티와 매핑할 테이블을 지정
     - 속성
         - name : 매핑할 테이블 이름 
@@ -13,7 +13,7 @@
         - schema
         - catalog
 
-- @Column
+## @Column
     - 객체 필드를 테이블 컬럼과 매핑
     - 필드 속성을 지정할 때 사용
     - 속성
@@ -28,7 +28,7 @@
         private String name;
         ```
 
-- @PersistenceContext   
+## @PersistenceContext   
     1. EntityManager를 빈으로 주입할 때 사용하는 어노테이션
         - 스프링에서는 영속성 관리를 위해 EntityManager가 존재
         - 그래서 스프링 컨테이너가 시작될 때 EntityManager를 만들어서 빈으로 등록하는데,
@@ -49,7 +49,7 @@
 참고] https://batory.tistory.com/497
 
 
-- @Id | @GeneratedValue
+## @Id | @GeneratedValue
 - @Id
     - 특정 속성을 기본키로 설정
         ```
@@ -65,6 +65,7 @@
         ```
 
 - @GeneratedValue
+    - @Id와 함께 사용되는 경우 기본키를 DB가 생성해주는 값으로 사용하게 됨
     - 기본값을 DB에서 자동으로 생성
         - 전략
             1. @GeneratedValue(startegy = GenerationType.IDENTITY)
@@ -77,20 +78,41 @@
                 - 선택된 DB에 따라 JPA가 자동으로 전략 선택
 
 
-@Embedded
-@Embeddable
+## @Embedded | @Embeddable
+- 임베디드 타입은 복합 값 타입으로 불리며 새로운 값 타입을 직접 정의해서 사용하는 JPA의 방법
+- 더 객체지향적이고 응집도 있는 코드로 개발가능
+- @Embeddable : 값 타입을 정의하는 곳에 표시
+    - 임베디드 타입을 적용하려면 새로운 Class를 만들고 해당 클래스에 임베디드 타입으로 묶으려던 Attribute들을 넣어준 뒤 @Embeddable를 붙여줌
+- @Embedded : 값 타입을 사용하는 곳에 표시
+참고 ] https://velog.io/@seongwon97/Spring-Boot-JPA-Embedded-Embeddable
 
-@JsonIgnore
---
+## @JsonIgnore
+- 클래스의 속성(필드, 멤버변수) 수준에서 사용
+- 직렬화 역직렬화에 사용되는 논리적 프로퍼티(속성..) 값을 무시할때 사용
+
+## @OneToMany | @ManyToOne
 @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
 @OneToMany(mappedBy = "member")
 @ManyToOne(fetch = LAZY)
 private Member member;
-
+- @OneToMany
+    - 일대다, 회원 한 명이 게시글을 여러 개 작성할 수 있으므로 회원(Member) 클래스에서 @OneToMany를 선언
+- @ManyToOne
+    - 다대일, 한 명의 회원이 여러 게시글을 작성할 수 있으므로 게시글(Article) 클래스에서 @ManyToOne을 선언
 @JoinColumn(name = "member_id")
---
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 
-
+## 생성자 관련 어노테이션
+1. @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    - 파라미터가 없는 기본 생성자를 생성
+    - 초기값 세팅이 필요한 final 변수가 있을 경우 컴파일 에러가 발생함으로 주의
+    - 속성
+        - @NoArgsConstructor(force=true) 
+            - null, 0 등 기본 값으로 초기화 된다.
+        - @NoArgsConstructor(AccessLevel.PROTECTED)
+            - 기본 생성자의 접근 제어를 PROTECTED로 설정해놓게 되면 무분별한 객체 생성에 대해 한번 더 체크할 수 있음
+2. @RequiredArgsConstructor
+    - final 변수, Notnull 표시가 된 변수처럼 필수적인 정보를 세팅하는 생성자를 생성
+3. @AllArgsConstructor
+    - 전체 변수를 생성하는 생성자를 생성
 # 롬복
 @Getter @Setter
