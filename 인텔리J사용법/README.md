@@ -1,5 +1,6 @@
 # 인텔리J 단축키
-
+- 히스토리 보기
+    - cmd + e
 - auto Import
     - settings > Editor > General > Auto Import > Add unambiguous imports on the fly
 
