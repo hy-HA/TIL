@@ -1,0 +1,101 @@
+# 회원가입 시 form 유효성 검증
+
+1. JSR 303 애노테이션 검증
+    - 값의 길이, 필수값
+2. 커스텀 검증
+    - 중복 이메일, 닉네임 여부 확인
+3. 폼 에러 있을 시, 폼 다시 보여주기.
+
+## 1. 컨트롤러
+- @InitBinder의 "signUpForm"은 SignUpForm의 타입을 따라감
+- @Valid뒤 @ModelAttribute 생략됨
+- signUpSubmit의 Errors는 바인딩 시 생길 수 있는 오류를 받는 객체
+```
+public class AccountController {
+
+    @InitBinder("signUpForm") //(2)커스텀 검증
+    public void initBinder(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(signUpFormValidator);
+    }
+
+    @PostMapping("/sign-up")   //(1)JSR303 애노테이션 검증
+    public String signUpSubmit(@Valid SignUpForm signUpForm, Errors errors) {
+
+        //(1)JSR303 에러 발생하면 폼 다시 보여주기
+        if (errors.hasErrors()) {
+            return "account/sign-up";
+        }
+
+        accountService.processNewAccount(signUpForm); //회원 정보 저장+인증 이메일 발송
+        return "redirect:/"; //처리 후 첫 페이지로 리다이렉트 (Post-Redirect-Get 패턴)
+    }
+}
+```
+
+## 2. JSR 303 애노테이션 검증
+- 값의 길이, 필수값
+```
+@Data
+public class SignUpForm {
+
+    @NotBlank
+    @Length(min = 3, max = 20)
+    @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-z0-9_-]{3,20}$")
+    private String nickname;
+
+    @Email
+    @NotBlank
+    private String email;
+
+    @NotBlank
+    @Length(min = 8, max = 50)
+    private String password;
+}
+```
+
+## 3. 커스텀 검증_SignUpFormValidator
+- Validator라는 스프링 인터페이스를 구현
+- 중복 이메일, 닉네임 여부 확인
+
+```
+@Component
+@RequiredArgsConstructor //final타입의 변수의 인스턴스를 만들어줌
+public class SignUpFormValidator implements Validator {
+
+    private final AccountRepository accountRepository;
+
+    //(1) SignUpForm타입의 인스턴스를  검증할 것
+    @Override
+    public boolean supports(Class<?> aClass) {
+
+        return aClass.isAssignableFrom(SignUpForm.class); 
+    }
+
+    //(2) 중복 이메일, 닉네임 여부 확인
+    @Override
+    public void validate(Object object, Errors errors) {
+
+        SignUpForm signUpForm = (SignUpForm)object;
+        if (accountRepository.existsByEmail(signUpForm.getEmail())) {
+            errors.rejectValue("email", "invalid.email", new Object[]{signUpForm.getEmail()}, "이미 사용중인 이메일입니다.");
+        }
+
+        if (accountRepository.existsByNickname(signUpForm.getNickname())) {
+            errors.rejectValue("nickname", "invalid.nickname", new Object[]{signUpForm.getEmail()}, "이미 사용중인 닉네임입니다.");
+        }
+    }
+}
+```
+- AccountRepository
+```
+@Transactional(readOnly = true)
+public interface AccountRepository extends JpaRepository<Account, Long> {
+
+    boolean existsByEmail(String email); //입력받은 이메일에 해당되는 값이 있는지
+
+    boolean existsByNickname(String nickname); //입력받은 닉네임에 해당되는 값이 있는지
+
+}
+```
+
+
