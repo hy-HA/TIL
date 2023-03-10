@@ -15,7 +15,8 @@
 9. 생성한 사용자로 접속
     - psql [데이터베이스명] -U postgres
 10. DB TOOL 설치
-
+11. 종료
+    - \q
 - application.properties파일
     - spring.profiles.active=local
 - application-dev.properties파일
@@ -27,3 +28,4 @@
     ```
 - edit-configuration에서 active profiles에서 dev설정
     - db가 postgreSQL로 연결됨
+
