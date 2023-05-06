@@ -94,14 +94,14 @@
 ## @OneToMany | @ManyToOne
 [참고](https://boomrabbit.tistory.com/217)
 ### @OneToMany
-    - 일대다, 회원 한 명이 게시글을 여러 개 작성할 수 있으므로 회원(Member) 클래스에서 @OneToMany를 선언
+- 일대다, 회원 한 명이 게시글을 여러 개 작성할 수 있으므로 회원(Member) 클래스에서 @OneToMany를 선언
     ```
     - @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     - @OneToMany(mappedBy = "member")
     ```
 ### @ManyToOne
-    - 다대일, 한 명의 회원이 여러 게시글을 작성할 수 있으므로 게시글(Article) 클래스에서 @ManyToOne을 선언
-    - @ManyToOne(fetch = LAZY)
+- 다대일, 한 명의 회원이 여러 게시글을 작성할 수 있으므로 게시글(Article) 클래스에서 @ManyToOne을 선언
+- @ManyToOne(fetch = LAZY)
 ### @JoinColumn(name = "member_id")
 - 해당 클래스 엔티티에 존재하는 필드명(컬럼)의 이름을 name을 통해 설정
 ## 생성자 관련 어노테이션
