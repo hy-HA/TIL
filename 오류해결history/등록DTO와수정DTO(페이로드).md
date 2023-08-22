@@ -28,3 +28,20 @@
         2. innerClass
             - 주의 : static으로 해야(자바 문법)
             - 껍데기 클래스를 만들고 그 안에 각각의 클래스를 만들어 관리
+
+## web컨트롤러 > api컨트롤러로 변경시 반환값이 2개일 경우
+1. Pair(스프링프레임워크 or 아파치) 사용
+    - 단, 컨트롤러는 get00로 이름을 명시해야하므로 잘 안씀(getFirst, getScond로 써야함)
+    ```
+    public Pair<Long, List<Reply>> get() {
+        
+        Pair<Long, List<Reply>> pair = Pair.of(id, replyList);
+
+        Long id = pair.getFirst();
+        List<Reply> reply = pair.getSecond();
+
+        return pair;
+    }
+    ```
+2. 2개의 반환객체를 감싸는 1개의 객체 따로 생성
+    - 포스트맨으로 테스트 시 어떻게?
