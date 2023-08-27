@@ -10,7 +10,7 @@
         System.out.println(e.getMessage());
     }
     ```
-# 1. 에러 반환하는 객체 정의 
+# 1. 에러 반환하는 객체
 - dto/ErrorResponse.java
 
 ```
@@ -28,7 +28,10 @@ public class ErrorResponse {
 }
 ```
 
-# 2. 에러를 표현하는 커스텀 도메인
+# 2. 에러를 표현하는 커스텀 
+1. RuntimeException 상속
+2. 
+- 예시 : TypeException
 ```
 public class TypeException extends RuntimeException {
 
@@ -41,6 +44,7 @@ public class TypeException extends RuntimeException {
     }
 }
 ```
+- 예시 : DomainException
 ```
 public class DomainException extends RuntimeException {
 
@@ -59,40 +63,69 @@ public class DomainException extends RuntimeException {
 
 ```
 # 3. 서비스에서 에러 잡기
-- Optional의 orElseThrow 메소드가 사용됨(Optional문법)
-```java
-StudentService.java>>
+- 예시 1 : StudentService에서 학생 조회
+    - Optional의 orElseThrow 메소드가 사용됨(Optional문법)
+    ```java
+    StudentService.java>>
 
-// 특정 학생 조회
-@Transactional(readOnly = true)
-public StudentResponse getStudent(Long id) {
-    Student student = studentRepository.findById(id)
-            .orElseThrow(() -> DomainException.notFoundRow(id));
+    @Transactional(readOnly = true)
+    public StudentResponse getStudent(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> DomainException.notFoundRow(id));
 
-    return new StudentResponse(student);
-}
-```
-```
-TestService.java>>
+        return new StudentResponse(student);
+    }
+    ```
+    - 테스트
+    ```
+    TestService.java>>
 
-@Transactional
-public TestResponse createTest(Long studentId, Long subjectId, int score) {
-    //학생,과목 조회
-    Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> DomainException.notFoundRow(studentId));
-    Subject subject = subjectRepository.findById(subjectId)
-            .orElseThrow(() -> DomainException.notFoundRow(subjectId));
-```
+    @Transactional
+    public TestResponse createTest(Long studentId, Long subjectId, int score) {
+        
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> DomainException.notFoundRow(studentId));
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> DomainException.notFoundRow(subjectId));
+    ```
+- 예시 2 : Subject 빌드
+    - enum 클래스에 정의되지 않은 상수 사용
+        - 참고 : enum타입 필드를 가진 객체를 생성할 때 enum클래스.valueOf()메소드 사용
+    ```
+    @Builder
+    public Subject(String subjectName){
+        
+        try {
+            this.subjectType = SubjectType.valueOf(subjectName);
+        } catch (IllegalArgumentException e){
+            throw TypeException.of("과목",subjectName);
+        }
+
+        this.isDeleted = false;
+    }
+    ```
 # 4. 범용 컨트롤러에서 에러 잡기
-### @ExceptionHandler
+## 예외처리 핸들러 메소드
+1. 예외발생시 오류 페이지로 내부이동시키거나
+2. 오류 메세지(JSON 텍스트 데이터)를 응답으로 제공
+    ```java
+    @ResponseBody
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<ErrorResponse> exception(Exception e){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.of("관리자에게 문의주세요.", e.getMessage()));
+    }
+    ```
+**@ControllerAdvice**
+- 모든 @Controller 즉, 전역에서 발생할 수 있는 예외를 잡아 처리해주는 annotation
+
+**@ExceptionHandler**
 - @Controller, @RestController가 적용된 Bean내에서 발생하는 예외를 잡아서 해당 어노테이션이 사용된 메서드에서 처리해주는 기능을 한다.
 - @ExceptionHandler라는 어노테이션을 쓰고 인자로 캐치하고 싶은 예외클래스를 등록해주면 끝난다.
 
-### @ControllerAdvice
-- 모든 @Controller 즉, 전역에서 발생할 수 있는 예외를 잡아 처리해주는 annotation
 
-### @ResponseStatus
-- 
+
+**@ResponseStatus**
 
 ```
 범용
@@ -103,9 +136,11 @@ public TestResponse createTest(Long studentId, Long subjectId, int score) {
         String.format
 ```
 
+
+
 ## 1. 커스텀 에러 사용
 
-```
+```java
 CommonAdviceController.java>>
 
 @ControllerAdvice
@@ -256,6 +291,14 @@ private static void init() throws RuntimeException{
 }
 ```
 
-
-
+## 참고 - 404에러
+- 404오류는 다른 오류와 달리 기본적으로 @Controller를 탈 필요가 없기 때문에 Exception으로 처리되지 않는 특성이 있다
+- 따라서 404를 프로그래밍적으로 처리하고 싶다면 404발생 시 예외를 발생시키도록 설정해야.
+    - 기본적으로 404는 EXCEPTION 상황이 아님
+1. DispatcherServlet을 등록할 때 throwExceptionIfHandlerFound 초기화 파라미터를 true로 설정
+    - application.properties
+    ```
+    spring.mvc.throw-exception-if-no-handler-found=true
+    spring.web.resources.add-mappings=false
+    ```
 
