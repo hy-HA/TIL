@@ -111,6 +111,10 @@ mail.username=[@앞까지 기재];mail.password=[16자리 비번입력]
     ```
 ## 리스너가 감지할 이벤트 클래스
 - MemebrCreatedMessage 클래스
+    - Spring 4.2 미만에서는 이벤트를 만들기 위해 ApplicationEvent를 상속받아야 한다.
+    - Spring 4.2부터는 이벤트가 ApplicationEvent를 상속받을 필요가 없다.
+        - 이벤트클래스는 spring 패키지를 전혀 사용하지 않는 POJO(Plain Old Java Object)가 된다.
+    - Spring에서 이벤트는 빈으로 등록하지 않는다.
     ```java
     @Getter
     @ToString
@@ -131,6 +135,7 @@ mail.username=[@앞까지 기재];mail.password=[16자리 비번입력]
     ```
 ## 리스너 클래스
 - 이벤트 발생시 코드를 실행할 리스너
+    - @EventListener 애노테이션을 붙여준다.
     ```java
     @Component
     @RequiredArgsConstructor
@@ -180,29 +185,32 @@ mail.username=[@앞까지 기재];mail.password=[16자리 비번입력]
             mimeMessageHelper.setText(message, true); 
         }
     ```
-- 서비스 클래스
-    - 회원 생성 시 이벤트 리스너가 감지하여 메일 발송
-    ```java
-    @Service
-    @RequiredArgsConstructor
-    public class MemberService {
+### 서비스 클래스
+- 회원 생성 시 이벤트 리스너가 감지하여 메일 발송
+- ApplicationEventPublisher
+    - Spring의 ApplicationContext가 상속하는 인터페이스 중 하나이다.
+    - 옵저버 패턴의 구현체로 이벤트 프로그래밍에 필요한 기능을 제공해준다.
+```java
+@Service
+@RequiredArgsConstructor
+public class MemberService {
 
-        private final ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-        @Transactional
-        public MemberResponse createMember(MemberRequest request) {
+    @Transactional
+    public MemberResponse createMember(MemberRequest request) {
 
-            Member member = memberMapper.toMember(request);
-            member.updateToken();
-            Member persistMember = memberRepository.save(member);
+        Member member = memberMapper.toMember(request);
+        member.updateToken();
+        Member persistMember = memberRepository.save(member);
 
-            applicationEventPublisher.publishEvent(new MemberCreatedMessage(persistMember));
+        applicationEventPublisher.publishEvent(new MemberCreatedMessage(persistMember));
 
-            return memberMapper.toMemberResponse(persistMember);
+        return memberMapper.toMemberResponse(persistMember);
 
-        }
     }
-    ```
+}
+```
 ## 인증메일 발송
 - web컨트롤러
     ```java
